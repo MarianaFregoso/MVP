@@ -15,7 +15,7 @@ out vec4 fragmentColor;
 //Funcion main
 void main() {
 	//crear la matris MVP
-	mat4 MVP = proyeccion * vista * modelo
+	mat4 MVP = proyeccion * vista * modelo;
 	//La posicion de salida del Vertice
 	//Se guarda en gl_Position(vec4)
 	gl_Position = MVP * posicion;

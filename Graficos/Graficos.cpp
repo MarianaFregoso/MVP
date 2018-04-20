@@ -39,21 +39,41 @@ Shader *shader;
 //Declaración de ventana
 GLFWwindow *window;
 
+//Propiedades de la ventana
+GLfloat ancho = 1024;
+GLfloat alto = 768;
+
+vec3 posicioncamara;
+
+
 void actualizar() {
 	int estadoderecha = glfwGetKey(window, GLFW_KEY_RIGHT);
 	if (estadoderecha == GLFW_PRESS) {
-		nave->rotanave(1);
+		posicioncamara.x += 0.01f;
+
+		cuadrado->vista = vista;
+
+		vista = lookAt(posicioncamara,	//POSICION CAMARA
+			vec3(0.0f, 0.0f, 0.0f),					//POSICION OBJETIVO
+			vec3(0.0f, -1.0f, 0.0f));
 		}
 	
 
 	int estadoizq = glfwGetKey(window, GLFW_KEY_LEFT);
 	if (estadoizq == GLFW_PRESS) {
-		nave->rotanave(0);
+		posicioncamara.x -= 0.01f;
+
+		cuadrado->vista = vista;
+
+		vista = lookAt(posicioncamara,	//POSICION CAMARA
+			vec3(0.0f, 0.0f, 0.0f),					//POSICION OBJETIVO
+			vec3(0.0f, -1.0f, 0.0f));
+		
 	}
 		
 	int estadoarriba = glfwGetKey(window, GLFW_KEY_UP);
 	if (estadoarriba == GLFW_PRESS) {
-		nave->movernave();
+		
 	}
 
 
@@ -130,23 +150,28 @@ void inicializarCuadrado() {
 	cuadrado->vertices.push_back({ vec4(1.0f, -1.0f, 1.0f, 1.0f),vec4((float(rand() % 101)) / 100,(float(rand() % 101)) / 100,(float(rand() % 101)) / 100,1.0f) });
 	cuadrado->vertices.push_back({ vec4(-1.0f, -1.0f, 1.0f, 1.0f),vec4((float(rand() % 101)) / 100,(float(rand() % 101)) / 100,(float(rand() % 101)) / 100,1.0f) });
 	cuadrado->vertices.push_back({ vec4(-1.0f, -1.0f, -1.0f, 1.0f),vec4((float(rand() % 101)) / 100,(float(rand() % 101)) / 100,(float(rand() % 101)) / 100,1.0f) });
+
+	cuadrado->vista = vista;
+	cuadrado->proyeccion = proyeccion;
 }
 
+
 void inicializarvista() {
-	vista = lookAt(vec3(0.0f, 20.0f, 20.0f));
+	vista = lookAt(posicioncamara,//posicion de la camara
+		vec3(0.0f, 0.0f, 0.0f),             //posicion del objetivo
+		vec3(0.0f, 1.0f, 0.0f));            //vector hacia arriba
 }
 
 void inicializarproyeccion() {
-
+	proyeccion =
+		perspective(45.0f, //campo de vision(FoV)
+			ancho / alto, //relacion de aspecto (Aspecr ratio)
+			0.1f, //near clipping (desde donde renderea
+			100.0f);//far clipping (hasta donde renderea)
 }
 
 int main()
 {
-	
-	//Propiedades de la ventana
-	GLfloat ancho = 1024;
-	GLfloat alto = 768;
-
 	//Inicialización de GLFW
 	if (!glfwInit()) {
 		//Si no se inició bien, terminar la ejecución
@@ -183,8 +208,13 @@ int main()
 
 	red = green = blue = 0.5f;
 
-	inicializarFigura();
+	posicioncamara = vec3(3.0f, 5.0f, 9.0f);
+
+	inicializarvista();
+	inicializarproyeccion();
 	inicializarCuadrado();
+	inicializarFigura();
+
 
 
 	//crear instancia del shader
@@ -208,7 +238,8 @@ int main()
 	cuadrado->shader = shader;
 	cuadrado->inicializarVertexArray(posicionID, colorID,ModeloID,vistaID,proyeccionID);
 
-
+	glEnable(GL_DEPTH_TEST);
+	glDepthFunc(GL_LESS);
 
 	//Ciclo de dibujo
 	while (!glfwWindowShouldClose(window)) {
